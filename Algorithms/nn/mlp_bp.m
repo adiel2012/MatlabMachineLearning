@@ -1,10 +1,15 @@
-function [W, B] = mlp_bp( x, y, num_iter, num_hidden, rate, momentum )
+function [W, B, error] = mlp_bp( x, y, num_iter, num_hidden, rate, momentum )
     [N NA] = size(x);
     [N NC] = size(y);
     X = [x ones(N,1)];
     Amp = 5;
-    W = Amp*(rand(NA+1,num_hidden)-1/2);
-    B = Amp*(rand(num_hidden+1, NC)-1/2);
+    %W = Amp*(rand(NA+1,num_hidden)-1/2);
+    %B = Amp*(rand(num_hidden+1, NC)-1/2);
+
+    [W1, bias1, Beta1, bias2] = initMLP( num_hidden, x',y' );    
+    W = [W1 bias1]';
+    B = [Beta1 bias2]';
+
     deltaB_previous = zeros(size(B));
     deltaW_previous = zeros(size(W));
     
@@ -13,7 +18,7 @@ function [W, B] = mlp_bp( x, y, num_iter, num_hidden, rate, momentum )
         H = 1./(1.+exp(-X*W));
         HA = [H  ones(N,1)];
         O = 1./(1.+exp(-HA*B));
-        error = sum(sum((y-O).^2))/N
+        error = sum(sum((y-O).^2))/N;
 
         dEdB = HA'*((O-y).*O.*(1-O));
         dEdW = X'*(((O-y).*O.*(1-O))*B(1:num_hidden,:)'.*(H.*(1-H)));
